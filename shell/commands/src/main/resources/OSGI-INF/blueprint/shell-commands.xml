@@ -50,6 +50,7 @@
         <command>
             <action class="org.apache.karaf.shell.commands.impl.InfoAction">
                 <property name="infoProviders" ref="infoProviders"/>
+                <property name="configuration" ref="karafConfig" />
             </action>
         </command>
         <command>
@@ -111,5 +112,6 @@
     </reference-list>
 
     <reference id="commandProcessor" interface="org.apache.felix.service.command.CommandProcessor"/>
+    <reference id="karafConfig" interface="org.apache.karaf.launch.KarafProperties" />
  
 </blueprint>

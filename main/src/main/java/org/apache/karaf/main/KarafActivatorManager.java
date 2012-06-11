@@ -10,7 +10,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.karaf.main.util.BootstrapLogManager;
+import org.apache.karaf.launch.util.BootstrapLogManager;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.launch.Framework;
 

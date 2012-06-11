@@ -29,6 +29,7 @@
     <reference id="commandProcessor" interface="org.apache.felix.service.command.CommandProcessor" />
 
     <bean id="consoleFactoryService" class="org.apache.karaf.shell.console.impl.jline.ConsoleFactoryService">
+        <property name="configuration" ref="karafConfig"/>
     </bean>    
     <service interface="org.apache.karaf.shell.console.ConsoleFactory" ref="consoleFactoryService" />
 
@@ -65,5 +66,7 @@
     </service>
 
     <bean id="exit" class="org.apache.karaf.shell.console.ExitAction" activation="lazy" scope="prototype" />
+
+    <reference id="karafConfig" interface="org.apache.karaf.launch.KarafProperties" />
 
 </blueprint>

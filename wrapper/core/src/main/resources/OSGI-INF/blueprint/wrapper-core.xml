@@ -23,7 +23,9 @@
 
     <ext:property-placeholder />
 
-    <bean id="wrapperService" class="org.apache.karaf.wrapper.internal.WrapperServiceImpl"/>
+    <bean id="wrapperService" class="org.apache.karaf.wrapper.internal.WrapperServiceImpl">
+        <property name="configuration" ref="karafConfig"/>
+    </bean>
 
     <service ref="wrapperService" interface="org.apache.karaf.wrapper.WrapperService"/>
 
@@ -36,4 +38,7 @@
             <entry key="jmx.objectname" value="org.apache.karaf:type=wrapper,name=${karaf.name}"/>
         </service-properties>
     </service>
+    
+    <reference id="karafConfig" interface="org.apache.karaf.launch.KarafProperties" />
+
 </blueprint>

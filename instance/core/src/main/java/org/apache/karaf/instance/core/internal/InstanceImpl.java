@@ -36,6 +36,7 @@ import org.apache.karaf.jpm.Process;
 import org.apache.karaf.jpm.ProcessBuilderFactory;
 import org.apache.karaf.jpm.impl.ProcessBuilderFactoryImpl;
 import org.apache.karaf.jpm.impl.ScriptUtils;
+import org.apache.karaf.launch.KarafProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,9 +223,9 @@ public class InstanceImpl implements Instance {
         if (javaOpts == null || javaOpts.length() == 0) {
             javaOpts = "-server -Xmx512M -Dcom.sun.management.jmxremote";
         }
-        String karafOpts = System.getProperty("karaf.opts", "");  
+        String karafOpts = service.getConfiguration().getOpts("");  
         
-        File libDir = new File(System.getProperty("karaf.home"), "lib");
+        File libDir = new File(service.getConfiguration().getHome(), "lib");
         String classpath = createClasspathFromAllJars(libDir);
         String endorsedDirs = getSubDirs(libDir, "endorsed");
         String extDirs = getSubDirs(libDir, "ext");
@@ -233,7 +234,7 @@ public class InstanceImpl implements Instance {
                 + " -Djava.util.logging.config.file=\"" + new File(location, "etc/java.util.logging.properties").getCanonicalPath() + "\""
                 + " -Djava.endorsed.dirs=\"" + endorsedDirs + "\""
                 + " -Djava.ext.dirs=\"" + extDirs + "\""
-                + " -Dkaraf.home=\"" + System.getProperty("karaf.home") + "\""
+                + " -Dkaraf.home=\"" + service.getConfiguration().getHome() + "\""
                 + " -Dkaraf.base=\"" + new File(location).getCanonicalPath() + "\""
                 + " -Dkaraf.startLocalConsole=false"
                 + " -Dkaraf.startRemoteShell=true"
@@ -249,7 +250,7 @@ public class InstanceImpl implements Instance {
 
     private String getSubDirs(File libDir, String subDir) throws IOException {
         File jreLibDir = new File(new File(System.getProperty("java.home"), "jre"), "lib");
-        File javaLibDir = new File(System.getProperty("java.home"), "lib");
+        File javaLibDir = new File(service.getConfiguration().getHome(), "lib");
         String sep = System.getProperty("path.separator");
         return new File(jreLibDir, subDir) + sep + new File(javaLibDir, subDir) + sep + new File(libDir, subDir).getCanonicalPath();
     }
@@ -405,7 +406,7 @@ public class InstanceImpl implements Instance {
         InputStream is = null;
         try {
             configProps.put("karaf.base", new File(location).getCanonicalPath());
-            configProps.put("karaf.home", System.getProperty("karaf.home"));
+            configProps.put("karaf.home", service.getConfiguration().getHome().getCanonicalPath());
             configProps.put("karaf.data", new File(new File(location), "data").getCanonicalPath());
             is = configPropURL.openConnection().getInputStream();
             configProps.load(is);

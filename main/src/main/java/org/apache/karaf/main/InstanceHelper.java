@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.karaf.launch.KarafProperties;
 import org.osgi.framework.launch.Framework;
 
 public class InstanceHelper {
@@ -97,13 +98,13 @@ public class InstanceHelper {
         }
     }
 
-    static void setupShutdown(ConfigProperties config, Framework framework) {
-        writePid(config.pidFile);
+    static void setupShutdown(KarafProperties config, Framework framework) {
+        writePid(config.getPidFile());
         try {
-            int port = config.shutdownPort;
-            String host = config.shutdownHost;
-            String portFile = config.portFile;
-            final String shutdown = config.shutdownCommand;
+            int port = config.getShutdownPort();
+            String host = config.getShutdownHost();
+            String portFile = config.getPortFile();
+            final String shutdown = config.getShutdownCommand();
             if (port >= 0) {
                 ServerSocket shutdownSocket = new ServerSocket(port, 1, InetAddress.getByName(host));
                 if (port == 0) {

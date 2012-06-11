@@ -23,7 +23,8 @@ package org.apache.karaf.main;
 import java.io.File;
 import java.net.URI;
 
-import org.apache.karaf.info.ServerInfo;
+import org.apache.karaf.launch.KarafProperties;
+import org.apache.karaf.launch.ServerInfo;
 
 /**
  * @version $Rev: 1209819 $ $Date: 2011-12-03 02:35:52 +0100 (Sa, 03 Dez 2011) $
@@ -31,61 +32,61 @@ import org.apache.karaf.info.ServerInfo;
 public class ServerInfoImpl implements ServerInfo {
 
     private final String[] args;
-    private final ConfigProperties config;
+    private final KarafProperties config;
 
-    public ServerInfoImpl(String[] args, ConfigProperties config) {
+    public ServerInfoImpl(String[] args, KarafProperties config) {
         this.args = args;
         this.config = config;
     }
 
     @Override
     public File getHomeDirectory() {
-        return config.karafHome;
+        return config.getHome();
     }
 
     @Override
     public String resolveHomePath(String filename) {
-        return resolveWithBase(config.karafHome, filename).getAbsolutePath();
+        return resolveWithBase(config.getHome(), filename).getAbsolutePath();
     }
 
     @Override
     public File resolveHome(String filename) {
-        return resolveWithBase(config.karafHome, filename);
+        return resolveWithBase(config.getHome(), filename);
     }
 
     @Override
     public URI resolveHome(URI uri) {
-        return config.karafHome.toURI().resolve(uri);
+        return config.getHome().toURI().resolve(uri);
     }
 
     @Override
     public File getBaseDirectory() {
-        return config.karafBase;
+        return config.getBase();
     }
 
     @Override
     public String resolveBasePath(String filename) {
-        return resolveWithBase(config.karafBase, filename).getAbsolutePath();
+        return resolveWithBase(config.getBase(), filename).getAbsolutePath();
     }
 
     @Override
     public File resolveBase(String filename) {
-        return resolveWithBase(config.karafBase, filename);
+        return resolveWithBase(config.getBase(), filename);
     }
 
     @Override
     public URI resolveBase(URI uri) {
-        return config.karafBase.toURI().resolve(uri);
+        return config.getBase().toURI().resolve(uri);
     }
 
     @Override
     public File getDataDirectory() {
-        return config.karafData;
+        return config.getData();
     }
 
     @Override
     public File getInstancesDirectory() {
-        return config.karafInstances;
+        return config.getInstances();
     }
 
     @Override

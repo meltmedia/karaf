@@ -37,5 +37,7 @@
             <entry key="jmx.objectname" value="org.apache.karaf:type=instance,name=${karaf.name}"/>
         </service-properties>
     </service>
+    
+    <reference id="karafConfig" interface="org.apache.karaf.launch.KarafProperties" />
 
 </blueprint>

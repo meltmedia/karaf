@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.felix.utils.properties.Properties;
 import org.apache.karaf.dev.core.DevService;
 import org.apache.karaf.dev.core.FrameworkType;
+import org.apache.karaf.launch.KarafProperties;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -47,6 +48,7 @@ public class DevServiceImpl implements DevService {
     private static final String ORIGINAL_WIRES = "Original-Wires";
 
     private BundleContext bundleContext;
+    private KarafProperties configuration;
 
     public DevServiceImpl(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -61,7 +63,7 @@ public class DevServiceImpl implements DevService {
     }
 
     private Properties loadProps() throws IOException {
-        return new Properties(new File(System.getProperty("karaf.base"), "etc/config.properties"));
+        return new Properties(new File(configuration.getBase(), "etc/config.properties"));
     }
 
     public void setFramework(FrameworkType framework) {
@@ -95,8 +97,8 @@ public class DevServiceImpl implements DevService {
     }
 
     public void restart(boolean clean) {
-        System.setProperty("karaf.restart", "true");
-        System.setProperty("karaf.restart.clean", Boolean.toString(clean));
+        configuration.setRestart(true);
+        configuration.setRestartClean(clean);
         try {
             bundleContext.getBundle(0).stop();
         } catch (BundleException e) {
@@ -108,7 +110,7 @@ public class DevServiceImpl implements DevService {
     public String setSystemProperty(String key, String value, boolean persist) {
         if (persist) {
             try {
-                String base = System.getProperty("karaf.base");
+                String base = configuration.getBase().getCanonicalPath();
                 Properties props = new Properties(new File(base, "etc/system.properties"));
                 props.put(key, value);
                 props.save();
@@ -119,6 +121,14 @@ public class DevServiceImpl implements DevService {
         return System.setProperty(key, value);
     }
     
+    public KarafProperties getConfiguration() {
+      return configuration;
+    }
+
+    public void setConfiguration(KarafProperties configuration) {
+      this.configuration = configuration;
+    }
+
     /*
      * Enable DynamicImport=* on the bundle
      */

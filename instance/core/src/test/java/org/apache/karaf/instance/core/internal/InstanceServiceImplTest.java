@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 import org.apache.karaf.instance.core.Instance;
 import org.apache.karaf.instance.core.InstanceSettings;
 import org.apache.karaf.instance.core.internal.InstanceServiceImpl;
+import org.apache.karaf.launch.KarafStandaloneProperties;
 
 public class InstanceServiceImplTest extends TestCase {
 
@@ -71,10 +72,10 @@ public class InstanceServiceImplTest extends TestCase {
      * //TODO: fix this test so it can run in an IDE
      */
     public void testConfigurationFiles() throws Exception {
-        InstanceServiceImpl service = new InstanceServiceImpl();
-        service.setStorageLocation(new File("target/instances/" + System.currentTimeMillis()));
-
         System.setProperty("karaf.base", new File("target/test-classes/").getAbsolutePath());
+        InstanceServiceImpl service = new InstanceServiceImpl();
+        service.setConfiguration(new KarafStandaloneProperties());
+        service.setStorageLocation(new File("target/instances/" + System.currentTimeMillis()));
         
         InstanceSettings settings = new InstanceSettings(8122, 1122, 44444, getName(), null, null, null);
         Instance instance = service.createInstance(getName(), settings, true);
@@ -98,10 +99,10 @@ public class InstanceServiceImplTest extends TestCase {
      * </p>
      */
     public void testRenameInstance() throws Exception {
-        InstanceServiceImpl service = new InstanceServiceImpl();
-        service.setStorageLocation(new File("target/instances/" + System.currentTimeMillis()));
-
         System.setProperty("karaf.base", new File("target/test-classes/").getAbsolutePath());
+        InstanceServiceImpl service = new InstanceServiceImpl();
+        service.setConfiguration(new KarafStandaloneProperties());
+        service.setStorageLocation(new File("target/instances/" + System.currentTimeMillis()));
 
         InstanceSettings settings = new InstanceSettings(8122, 1122, 44444, getName(), null, null, null);
         service.createInstance(getName(), settings, true);

@@ -38,16 +38,19 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.karaf.info.ServerInfo;
-import org.apache.karaf.main.lock.Lock;
-import org.apache.karaf.main.lock.LockCallBack;
-import org.apache.karaf.main.lock.LockManager;
-import org.apache.karaf.main.lock.NoLock;
-import org.apache.karaf.main.util.ArtifactResolver;
-import org.apache.karaf.main.util.BootstrapLogManager;
-import org.apache.karaf.main.util.SimpleMavenResolver;
-import org.apache.karaf.main.util.StringMap;
-import org.apache.karaf.main.util.Utils;
+import org.apache.karaf.launch.KarafProperties;
+import org.apache.karaf.launch.KarafStandaloneProperties;
+import org.apache.karaf.launch.PropertiesLoader;
+import org.apache.karaf.launch.ServerInfo;
+import org.apache.karaf.launch.lock.Lock;
+import org.apache.karaf.launch.lock.LockCallBack;
+import org.apache.karaf.launch.lock.LockManager;
+import org.apache.karaf.launch.lock.NoLock;
+import org.apache.karaf.launch.util.ArtifactResolver;
+import org.apache.karaf.launch.util.BootstrapLogManager;
+import org.apache.karaf.launch.util.SimpleMavenResolver;
+import org.apache.karaf.launch.util.StringMap;
+import org.apache.karaf.launch.util.Utils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -78,7 +81,7 @@ public class Main {
 
     Logger LOG = Logger.getLogger(this.getClass().getName());
 
-    private ConfigProperties config;
+    private KarafProperties config;
     private Framework framework = null;
     private final String[] args;
     private int exitCode;
@@ -212,14 +215,14 @@ public class Main {
     }
 
     public void launch() throws Exception {
-        config = new ConfigProperties();
+        config = new KarafStandaloneProperties();
         Lock lock = createLock();
-        lockManager = new LockManager(lock, new KarafLockCallback(), config.lockDelay);
-        InstanceHelper.updateInstancePid(config.karafHome, config.karafBase);
-        BootstrapLogManager.setProperties(config.props);
+        lockManager = new LockManager(lock, new KarafLockCallback(), config.getLockDelay());
+        InstanceHelper.updateInstancePid(config.getHome(), config.getBase());
+        BootstrapLogManager.setProperties(config);
         LOG.addHandler(BootstrapLogManager.getDefaultHandler());
 
-        for (String provider : config.securityProviders) {
+        for (String provider : config.getSecurityProviders()) {
             addSecurityProvider(provider);
         }
         
@@ -229,37 +232,39 @@ public class Main {
         // Start up the OSGI framework
         ClassLoader classLoader = createClassLoader(resolver);
         FrameworkFactory factory = loadFrameworkFactory(classLoader);
-        framework = factory.newFramework(new StringMap(config.props, false));
+        framework = factory.newFramework(new StringMap(config.getProperties(), false));
         framework.init();
         framework.start();
 
         FrameworkStartLevel sl = framework.adapt(FrameworkStartLevel.class);
-        sl.setInitialBundleStartLevel(config.defaultBundleStartlevel);
+        sl.setInitialBundleStartLevel(config.getDefaultBundleStartlevel());
 
         // If we have a clean state, install everything
         if (framework.getBundleContext().getBundles().length == 1) {
 
             LOG.info("Installing and starting initial bundles");
-            File startupPropsFile = new File(config.etcFolder, STARTUP_PROPERTIES_FILE_NAME);
+            File startupPropsFile = new File(config.getEtc(), STARTUP_PROPERTIES_FILE_NAME);
             List<BundleInfo> bundles = readBundlesFromStartupProperties(startupPropsFile);        
             installAndStartBundles(resolver, framework.getBundleContext(), bundles);
             LOG.info("All initial bundles installed and set to start");
         }
 
+        KarafProperties configuration = new KarafStandaloneProperties();
+        framework.getBundleContext().registerService(KarafProperties.class, configuration, null);
         ServerInfo serverInfo = new ServerInfoImpl(args, config);
         framework.getBundleContext().registerService(ServerInfo.class, serverInfo, null);
 
         activatorManager = new KarafActivatorManager(classLoader, framework);
         activatorManager.startKarafActivators();
         
-        setStartLevel(config.lockStartLevel);
+        setStartLevel(config.getLockStartLevel());
         lockManager.startLockMonitor();
     }
     
     private ClassLoader createClassLoader(ArtifactResolver resolver) throws Exception {
         List<URL> urls = new ArrayList<URL>();
-        urls.add(resolver.resolve(config.frameworkBundle).toURL());
-        File[] libs = new File(config.karafHome, "lib").listFiles();
+        urls.add(resolver.resolve(config.getFrameworkBundle()).toURL());
+        File[] libs = new File(config.getHome(), "lib").listFiles();
         if (libs != null) {
             for (File f : libs) {
                 if (f.isFile() && f.canRead() && f.getName().endsWith(".jar")) {
@@ -271,7 +276,7 @@ public class Main {
     }
     
     private FrameworkFactory loadFrameworkFactory(ClassLoader classLoader) throws Exception {
-        String factoryClass = config.frameworkFactoryClass;
+        String factoryClass = config.getFrameworkFactoryClass();
         if (factoryClass == null) {
             InputStream is = classLoader.getResourceAsStream("META-INF/services/" + FrameworkFactory.class.getName());
             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -283,13 +288,13 @@ public class Main {
     }
 
     private Lock createLock() {
-        if (config.useLock) {
+        if (config.getUseLock()) {
             return new NoLock();
         }
         try {
-            return (Lock) Lock.class.getClassLoader().loadClass(config.lockClass).getConstructor(Properties.class).newInstance(config.props);
+            return (Lock) Lock.class.getClassLoader().loadClass(config.getLockClass()).getConstructor(Properties.class).newInstance(config.getProperties());
         } catch (Exception e) {
-            throw new RuntimeException("Exception instantiating lock class " + config.lockClass, e);
+            throw new RuntimeException("Exception instantiating lock class " + config.getLockClass(), e);
         }
     }
 
@@ -343,16 +348,16 @@ public class Main {
 
     private List<File> getBundleRepos() {
         List<File> bundleDirs = new ArrayList<File>();
-        File baseSystemRepo = new File(config.karafHome, config.defaultRepo);
+        File baseSystemRepo = new File(config.getHome(), config.getDefaultRepo());
         if (!baseSystemRepo.exists() && baseSystemRepo.isDirectory()) {
             throw new RuntimeException("system repo folder not found: " + baseSystemRepo.getAbsolutePath());
         }
         bundleDirs.add(baseSystemRepo);
 
-        File homeSystemRepo = new File(config.karafHome, config.defaultRepo);
+        File homeSystemRepo = new File(config.getHome(), config.getDefaultRepo());
         bundleDirs.add(homeSystemRepo);
 
-        String locations = config.bundleLocations;
+        String locations = config.getBundleLocations();
         if (locations != null) {
             StringTokenizer st = new StringTokenizer(locations, "\" ", true);
             if (st.countTokens() > 0) {
@@ -361,10 +366,10 @@ public class Main {
                     location = Utils.nextLocation(st);
                     if (location != null) {
                         File f;
-                        if (config.karafBase.equals(config.karafHome)) {
-                            f = new File(config.karafHome, location);
+                        if (config.getBase().equals(config.getHome())) {
+                            f = new File(config.getHome(), location);
                         } else {
-                            f = new File(config.karafBase, location);
+                            f = new File(config.getBase(), location);
                         }
                         if (f.exists() && f.isDirectory()) {
                             bundleDirs.add(f);
@@ -444,8 +449,8 @@ public class Main {
                 }.start();
             }
 
-            int timeout = config.shutdownTimeout;
-            if (config.shutdownTimeout <= 0) {
+            int timeout = config.getShutdownTimeout();
+            if (config.getShutdownTimeout() <= 0) {
                 timeout = Integer.MAX_VALUE;
             }
             while (timeout > 0) {
@@ -471,16 +476,16 @@ public class Main {
         @Override
         public void lockLost() {
             if (framework.getState() == Bundle.ACTIVE) {
-                LOG.warning("Lock lost. Setting startlevel to " + config.lockStartLevel);
-                setStartLevel(config.lockStartLevel);
+                LOG.warning("Lock lost. Setting startlevel to " + config.getLockStartLevel());
+                setStartLevel(config.getLockStartLevel());
             }
         }
 
         @Override
         public void lockAquired() {
-            LOG.info("Lock acquired. Setting startlevel to " + config.defaultStartLevel);
+            LOG.info("Lock acquired. Setting startlevel to " + config.getDefaultStartLevel());
             InstanceHelper.setupShutdown(config, framework);
-            setStartLevel(config.defaultStartLevel);
+            setStartLevel(config.getDefaultStartLevel());
         }
 
         @Override

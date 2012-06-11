@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import org.apache.karaf.launch.KarafProperties;
+import org.apache.karaf.launch.KarafStandaloneProperties;
+
 /**
  * Main class used to stop the root Karaf instance
  */
@@ -38,13 +41,13 @@ public class Stop {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        ConfigProperties config = new ConfigProperties();
-        if (config.shutdownPort == 0 && config.portFile != null) {
-            config.shutdownPort = getPortFromShutdownPortFile(config.portFile);
+        KarafProperties config = new KarafStandaloneProperties();
+        if (config.getShutdownPort() == 0 && config.getPortFile() != null) {
+            config.setShutdownPort(getPortFromShutdownPortFile(config.getPortFile()));
         }
-        if (config.shutdownPort > 0) {
-            Socket s = new Socket(config.shutdownHost, config.shutdownPort);
-            s.getOutputStream().write(config.shutdownCommand.getBytes());
+        if (config.getShutdownPort() > 0) {
+            Socket s = new Socket(config.getShutdownHost(), config.getShutdownPort());
+            s.getOutputStream().write(config.getShutdownCommand().getBytes());
             s.close();
         } else {
             System.err.println("Unable to find port...");

@@ -34,6 +34,9 @@ import java.util.Enumeration;
 import java.util.List;
 
 import jline.Terminal;
+
+import org.apache.karaf.launch.KarafProperties;
+import org.apache.karaf.launch.PartialKarafConfiguration;
 import org.apache.karaf.shell.commands.Action;
 import org.apache.karaf.shell.commands.Command;
 import org.apache.karaf.shell.commands.CommandException;
@@ -51,7 +54,23 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 
 public class Main {
-    private String application = System.getProperty("karaf.name", "root");
+  private KarafProperties configuration = new PartialKarafConfiguration() {
+    
+    @Override
+    public String getName( String defaultValue ) {
+      return System.getProperty("karaf.name", "root");
+    }
+    @Override
+    public String getHistory() {
+      return System.getProperty("karaf.history");
+    }
+    
+    @Override
+    public String getShellInitScript() {
+      return System.getProperty(ConsoleImpl.SHELL_INIT_SCRIPT);
+    }
+  };
+    private String application = configuration.getName("root");
     private String user = "karaf";
 
     public static void main(String args[]) throws Exception {
@@ -208,7 +227,7 @@ public class Main {
      * @throws Exception
      */
     protected ConsoleImpl createConsole(CommandProcessorImpl commandProcessor, InputStream in, PrintStream out, PrintStream err, Terminal terminal) throws Exception {
-        return new ConsoleImpl(commandProcessor, in, out, err, terminal, null);
+        return new ConsoleImpl(commandProcessor, in, out, err, terminal, configuration, null);
     }
 
     /**

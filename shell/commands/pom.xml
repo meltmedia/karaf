@@ -39,6 +39,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>org.apache.karaf.launch</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
             <scope>provided</scope>

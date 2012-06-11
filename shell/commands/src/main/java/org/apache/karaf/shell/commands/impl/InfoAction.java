@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.karaf.launch.KarafProperties;
 import org.apache.karaf.shell.commands.Command;
 import org.apache.karaf.shell.commands.InfoProvider;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
@@ -44,6 +45,8 @@ import org.fusesource.jansi.Ansi;
 
 @Command(scope = "shell", name = "info", description = "Prints system information.")
 public class InfoAction extends OsgiCommandSupport {
+  
+    protected KarafProperties configuration;
 
     private NumberFormat fmtI = new DecimalFormat("###,###", new DecimalFormatSymbols(Locale.ENGLISH));
     private NumberFormat fmtD = new DecimalFormat("###,##0.000", new DecimalFormatSymbols(Locale.ENGLISH));
@@ -64,9 +67,9 @@ public class InfoAction extends OsgiCommandSupport {
         //
         maxNameLen = 25;
         System.out.println("Karaf");
-        printValue("Karaf version", maxNameLen, System.getProperty("karaf.version"));
-        printValue("Karaf home", maxNameLen, System.getProperty("karaf.home"));
-        printValue("Karaf base", maxNameLen, System.getProperty("karaf.base"));
+        printValue("Karaf version", maxNameLen, configuration.getVersion());
+        printValue("Karaf home", maxNameLen, configuration.getHome().getCanonicalPath());
+        printValue("Karaf base", maxNameLen, configuration.getBase().getCanonicalPath());
         printValue("OSGi Framework", maxNameLen, bundleContext.getBundle(0).getSymbolicName() + " - " +
                 bundleContext.getBundle(0).getVersion());
         System.out.println();
@@ -149,6 +152,14 @@ public class InfoAction extends OsgiCommandSupport {
         }
 
         return null;
+    }
+
+    public KarafProperties getConfiguration() {
+      return configuration;
+    }
+
+    public void setConfiguration(KarafProperties configuration) {
+      this.configuration = configuration;
     }
 
     private long getSunOsValueAsLong(OperatingSystemMXBean os, String name) throws Exception {

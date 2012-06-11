@@ -16,6 +16,7 @@
  */
 package org.apache.karaf.wrapper.internal;
 
+import org.apache.karaf.launch.KarafProperties;
 import org.apache.karaf.wrapper.WrapperService;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
@@ -34,6 +35,8 @@ import java.util.zip.ZipEntry;
 public class WrapperServiceImpl implements WrapperService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(WrapperServiceImpl.class);
+    
+    private KarafProperties configuration;
 
     public void install() throws Exception {
         install("karaf", "", "", "AUTO_START");
@@ -41,7 +44,7 @@ public class WrapperServiceImpl implements WrapperService {
 
     public File[] install(String name, String displayName, String description, String startType) throws Exception {
 
-        File base = new File(System.getProperty("karaf.base"));
+        File base = configuration.getBase();
         File bin = new File(base, "bin");
         File etc = new File(base, "etc");
         File lib = new File(base, "lib");
@@ -51,9 +54,9 @@ public class WrapperServiceImpl implements WrapperService {
         }
 
         HashMap<String, String> props = new HashMap<String, String>();
-        props.put("${karaf.home}", System.getProperty("karaf.home"));
+        props.put("${karaf.home}", configuration.getHome().getCanonicalPath());
         props.put("${karaf.base}", base.getPath());
-        props.put("${karaf.data}", System.getProperty("karaf.data"));
+        props.put("${karaf.data}", configuration.getData().getCanonicalPath());
         props.put("${name}", name);
         props.put("${displayName}", displayName);
         props.put("${description}", description);
@@ -261,6 +264,14 @@ public class WrapperServiceImpl implements WrapperService {
         wrapperPaths[1] = serviceFile;
 
         return wrapperPaths;
+    }
+
+    public KarafProperties getConfiguration() {
+      return configuration;
+    }
+
+    public void setConfiguration(KarafProperties configuration) {
+      this.configuration = configuration;
     }
 
     private void mkdir(File file) {

@@ -43,6 +43,7 @@ import org.apache.felix.gogo.runtime.Parser;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Converter;
+import org.apache.karaf.launch.KarafProperties;
 import org.apache.karaf.shell.commands.CommandException;
 import org.apache.karaf.shell.console.CloseShellException;
 import org.apache.karaf.shell.console.CommandSessionHolder;
@@ -80,12 +81,14 @@ public class ConsoleImpl implements Console
     private PrintStream out;
     private PrintStream err;
     private Thread thread;
+    protected KarafProperties configuration;
 
     public ConsoleImpl(CommandProcessor processor,
                    InputStream in,
                    PrintStream out,
                    PrintStream err,
                    Terminal term,
+                   KarafProperties configuration,
                    Runnable closeCallback) throws Exception
     {
         this.in = in;
@@ -97,6 +100,7 @@ public class ConsoleImpl implements Console
         this.session = processor.createSession(this.consoleInput, this.out, this.err);
         this.session.put("SCOPE", "shell:bundle:*");
         this.session.put("SUBSHELL", "");
+        this.configuration = configuration;
         this.closeCallback = closeCallback;
 
         reader = new ConsoleReader(this.consoleInput,
@@ -128,7 +132,7 @@ public class ConsoleImpl implements Console
      */
     protected File getHistoryFile() {
     	String defaultHistoryPath = new File(System.getProperty("user.home"), ".karaf/karaf.history").toString();
-        return new File(System.getProperty("karaf.history", defaultHistoryPath));
+        return new File(configuration.getHistory(defaultHistoryPath));
     }
 
     public CommandSession getSession() {
@@ -157,7 +161,7 @@ public class ConsoleImpl implements Console
         pipe.start();
         welcome();
         setSessionProperties();
-        String scriptFileName = System.getProperty(SHELL_INIT_SCRIPT);
+        String scriptFileName = configuration.getShellInitScript();
         executeScript(scriptFileName);
         while (running) {
             try {

@@ -37,6 +37,7 @@
     <modules>
         <module>osgicore</module>
         <module>util</module>
+        <module>launch</module>
         <module>main</module>
         <module>features</module>
         <module>kar</module>
@@ -326,6 +327,11 @@
                 <groupId>org.apache.karaf</groupId>
                 <artifactId>manual</artifactId>
                 <type>html</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.karaf</groupId>
+                <artifactId>org.apache.karaf.launch</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

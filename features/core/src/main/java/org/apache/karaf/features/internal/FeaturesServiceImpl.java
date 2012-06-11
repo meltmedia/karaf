@@ -69,6 +69,7 @@ import org.apache.karaf.features.FeaturesService;
 import org.apache.karaf.features.Repository;
 import org.apache.karaf.features.RepositoryEvent;
 import org.apache.karaf.features.Resolver;
+import org.apache.karaf.launch.KarafProperties;
 import org.apache.karaf.region.persist.RegionsPersistence;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -105,6 +106,7 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
 
     private BundleContext bundleContext;
     private ConfigurationAdmin configAdmin;
+    private KarafProperties configuration;
     private long resolverTimeout = 5000;
     private Set<URI> uris;
     private Map<URI, RepositoryImpl> repositories = new HashMap<URI, RepositoryImpl>();
@@ -138,6 +140,14 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
 
     public void setConfigAdmin(ConfigurationAdmin configAdmin) {
         this.configAdmin = configAdmin;
+    }
+    
+    public KarafProperties getConfiguration() {
+      return configuration;
+    }
+    
+    public void setConfiguration( KarafProperties configuration ) {
+      this.configuration = configuration;
     }
 
     public long getResolverTimeout() {
@@ -773,7 +783,7 @@ public class FeaturesServiceImpl implements FeaturesService, FrameworkListener {
             System.out.println("Checking configuration file " + fileLocation);
         }
     	
-    	String basePath = System.getProperty("karaf.base");
+    	String basePath = configuration.getBase().getPath();
     	
     	if (finalname.indexOf("${") != -1) {
     		//remove any placeholder or variable part, this is not valid.

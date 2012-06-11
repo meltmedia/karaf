@@ -18,6 +18,8 @@ package org.apache.karaf.shell.console;
 
 import jline.Terminal;
 import org.apache.felix.gogo.runtime.CommandProcessorImpl;
+import org.apache.karaf.launch.KarafProperties;
+import org.apache.karaf.launch.PartialKarafConfiguration;
 import org.apache.karaf.shell.console.impl.Main;
 import org.apache.karaf.shell.console.impl.jline.ConsoleImpl;
 
@@ -30,6 +32,22 @@ import java.io.PrintStream;
  * with sub classes.
  */
 public class ExampleSubclassMain extends Main  {
+  private KarafProperties configuration = new PartialKarafConfiguration() {
+    
+    @Override
+    public String getName( String defaultValue ) {
+      return System.getProperty("karaf.name", "root");
+    }
+    @Override
+    public String getHistory() {
+      return System.getProperty("karaf.history");
+    }
+    
+    @Override
+    public String getShellInitScript() {
+      return System.getProperty(ConsoleImpl.SHELL_INIT_SCRIPT);
+    }
+  };
 
     public static void main(String args[]) throws Exception {
         ExampleSubclassMain main = new ExampleSubclassMain();
@@ -44,7 +62,7 @@ public class ExampleSubclassMain extends Main  {
 
     @Override
     protected ConsoleImpl createConsole(CommandProcessorImpl commandProcessor, InputStream in, PrintStream out, PrintStream err, Terminal terminal) throws Exception {
-        return new ConsoleImpl(commandProcessor, in, out, err, terminal, null) {
+        return new ConsoleImpl(commandProcessor, in, out, err, terminal, configuration, null) {
 
             /**
              * If you don't overwrite, then karaf will use the welcome message found in the

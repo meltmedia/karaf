@@ -284,6 +284,12 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.karaf</groupId>
+                                    <artifactId>org.apache.karaf.launch</artifactId>
+                                    <outputDirectory>target/classes/resources/lib</outputDirectory>
+                                    <destFileName>karaf-launch.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.karaf</groupId>
                                     <artifactId>org.osgi.core</artifactId>
                                     <outputDirectory>target/classes/resources/lib</outputDirectory>
                                     <destFileName>karaf-org.osgi.core.jar</destFileName>

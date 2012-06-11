@@ -30,6 +30,7 @@
 
     <bean id="devService" class="org.apache.karaf.dev.core.internal.DevServiceImpl">
         <argument ref="blueprintBundleContext"/>
+        <property name="configuration" ref="karafConfig"/>
     </bean>
 
     <service ref="devService" interface="org.apache.karaf.dev.core.DevService" />
@@ -43,5 +44,7 @@
             <entry key="jmx.objectname" value="org.apache.karaf:type=dev,name=$[karaf.name]"/>
         </service-properties>
     </service>
+
+    <reference id="karafConfig" interface="org.apache.karaf.launch.KarafProperties" />
 
 </blueprint>
